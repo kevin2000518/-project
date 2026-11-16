@@ -1009,7 +1009,7 @@
     // ===== Google 試算表訂單串接 =====
     // 部署 Google Apps Script 網頁應用程式後，把網址貼在這裡（以 /exec 結尾）。
     // 留空則維持「模擬下單」，不會送出任何資料。
-    const ORDER_API_URL = "";
+    const ORDER_API_URL = "https://script.google.com/macros/s/AKfycbxWEUePiZC16pDzDkbLxGgcwPWFUX95IEhs3_cgO6WGFge2T_Y_rRJxHXeauwGTdHA/exec";
     const ORDER_API_ENABLED = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(ORDER_API_URL);
 
     if (ORDER_API_ENABLED) {
