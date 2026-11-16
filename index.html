@@ -141,8 +141,19 @@
     .faq-item.open .faq-answer { display:block; }
     .faq-item.open .faq-icon { transform:rotate(45deg); }
     .faq-icon { transition:transform .2s; }
+    .booking-fab {
+      position:fixed; right:max(24px, env(safe-area-inset-right));
+      bottom:calc(24px + env(safe-area-inset-bottom)); z-index:60;
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      min-height:56px; padding:16px 24px; border:1px solid #a9552b;
+      border-radius:999px; background:#a9552b; color:white;
+      font-size:14px; font-weight:600; box-shadow:0 8px 24px #30251f30;
+      transition:background .2s, transform .2s, box-shadow .2s;
+    }
+    .booking-fab:hover { background:#8d4522; transform:translateY(-3px); box-shadow:0 12px 28px #30251f40; }
+    .booking-fab svg { width:20px; height:20px; flex-shrink:0; }
     .toast {
-      position:fixed; right:24px; bottom:24px; z-index:130;
+      position:fixed; right:24px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:130;
       background:var(--brown); color:white; padding:16px 20px;
       display:flex; align-items:center; gap:12px; max-width:calc(100vw - 48px);
       box-shadow:0 12px 35px #0003;
@@ -176,7 +187,9 @@
       .container-custom { padding:0 20px; }
       .hero { min-height:600px; background-position:59% center; }
       .hero h1 { font-size:36px; }
-      .toast { right:16px; bottom:16px; }
+      .booking-fab { right:max(16px, env(safe-area-inset-right)); bottom:calc(16px + env(safe-area-inset-bottom)); padding:14px 20px; }
+      .toast { right:16px; bottom:calc(88px + env(safe-area-inset-bottom)); }
+      footer { padding-bottom:88px; }
     }
     @media (prefers-reduced-motion:reduce) {
       *,*:before,*:after { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
@@ -451,6 +464,14 @@
       </div>
     </div>
   </footer>
+
+  <button id="bookingButton" class="booking-fab" type="button" aria-label="立即預約，開啟 Google 日曆預約頁面（另開分頁）">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M16 3v4M8 3v4M3 11h18m-13 5 3 3 5-5" />
+    </svg>
+    <span>立即預約</span>
+  </button>
 
   <!-- Cart -->
   <div id="cartOverlay" class="overlay"></div>
@@ -1001,6 +1022,16 @@
         renderStores();
       }
       if (faq) toggleFaq(Number(faq.dataset.faq));
+    });
+
+    // Google 日曆連結；可替換成正式的預約時間表連結。
+    const GOOGLE_CALENDAR_BOOKING_URL = "https://calendar.google.com/calendar/u/0/r/week/2026/11/17";
+    $("#bookingButton").addEventListener("click", () => {
+      if (!GOOGLE_CALENDAR_BOOKING_URL) {
+        showToast("預約連結尚未設定，請先聯絡門市預約。");
+        return;
+      }
+      window.open(GOOGLE_CALENDAR_BOOKING_URL, "_blank", "noopener,noreferrer");
     });
 
     $("#openCart").addEventListener("click", openCart);
