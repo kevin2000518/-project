@@ -580,7 +580,7 @@
   <div id="checkoutModal" class="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" aria-hidden="true">
     <div class="modal" tabindex="-1">
       <div class="flex justify-between items-center p-6 border-b border-line">
-        <div><h2 id="checkoutTitle" class="serif text-xl font-semibold">確認你的訂單</h2><p class="text-xs text-muted mt-2">填寫聯絡資料，完成模擬下單</p></div>
+        <div><h2 id="checkoutTitle" class="serif text-xl font-semibold">確認你的訂單</h2><p id="checkoutSubtitle" class="text-xs text-muted mt-2">填寫聯絡資料，完成模擬下單</p></div>
         <button id="closeCheckout" class="icon-button" aria-label="關閉結帳視窗"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="checkoutForm" class="p-6">
@@ -610,8 +610,9 @@
           <div class="flex justify-between text-sm mt-3"><span>示範配送費</span><span id="shippingFee"></span></div>
           <div class="flex justify-between text-lg font-semibold border-t border-[#d8cabd] pt-4 mt-4"><span>合計</span><span id="checkoutTotal"></span></div>
         </div>
-        <p class="text-[11px] text-muted leading-relaxed mt-4">此為前端模擬下單，資料不會傳送至商家或金流系統，也不會產生真實訂單。</p>
-        <button type="submit" class="btn-primary w-full mt-5">確認送出訂單</button>
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
+        <p id="checkoutNotice" class="text-[11px] text-muted leading-relaxed mt-4">此為前端模擬下單，資料不會傳送至商家或金流系統，也不會產生真實訂單。</p>
+        <button id="submitOrderBtn" type="submit" class="btn-primary w-full mt-5">確認送出訂單</button>
       </form>
     </div>
   </div>
@@ -623,7 +624,7 @@
         <i data-lucide="check" class="w-10 h-10"></i>
       </div>
       <h2 id="successTitle" class="serif text-3xl mt-7 font-semibold">訂單已建立！</h2>
-      <p class="text-muted text-sm leading-loose mt-4">感謝你的選購。這是一筆成功建立的模擬訂單。</p>
+      <p id="successMessage" class="text-muted text-sm leading-loose mt-4">感謝你的選購。這是一筆成功建立的模擬訂單。</p>
       <p id="orderNumber" class="text-xs tracking-wider mt-6 bg-[#f1ebe4] p-4"></p>
       <p id="successSummary" class="text-xs text-muted mt-4"></p>
       <button id="successDone" class="btn-primary mt-8 w-full">返回首頁</button>
@@ -637,7 +638,7 @@
         <h2 id="privacyTitle" class="serif text-xl font-semibold">隱私權政策 · 展示版</h2>
         <button id="closePrivacy" class="icon-button" aria-label="關閉隱私權政策"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <p class="text-sm text-muted leading-[2]">
+      <p id="privacyText" class="text-sm text-muted leading-[2]">
         本網站為純前端展示作品，不提供真實商品交易。
         購物車資料僅儲存在你的瀏覽器 localStorage 中。
         模擬結帳所輸入的姓名、電話、電子郵件與地址不會傳送至任何訂單伺服器，
@@ -1005,7 +1006,42 @@
       openModal("#checkoutModal");
     }
 
-    function submitOrder(event) {
+    // ===== Google 試算表訂單串接 =====
+    // 部署 Google Apps Script 網頁應用程式後，把網址貼在這裡（以 /exec 結尾）。
+    // 留空則維持「模擬下單」，不會送出任何資料。
+    const ORDER_API_URL = "";
+    const ORDER_API_ENABLED = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(ORDER_API_URL);
+
+    if (ORDER_API_ENABLED) {
+      $("#checkoutSubtitle").textContent = "填寫聯絡資料，送出後門市將為你準備";
+      $("#checkoutNotice").textContent = "送出後，訂單資料（姓名、電話、Email、地址與餐點）會傳送給金煎門市，僅用於處理本次訂單。目前不提供線上付款，請於取餐或收貨時付款。";
+      $("#successMessage").textContent = "感謝你的選購！我們已收到你的訂單，門市將盡快為你準備。";
+      $("#privacyText").textContent =
+        "購物車資料僅儲存在你的瀏覽器 localStorage 中。結帳時填寫的姓名、電話、電子郵件、地址與訂購內容，" +
+        "會透過 Google Apps Script 傳送並儲存於金煎的 Google 試算表，僅用於處理訂單與聯繫取餐／配送，不會提供給無關第三方。" +
+        "網頁載入時可能會向 Tailwind、Google Fonts、Lucide 與 Unsplash 等第三方服務請求資源，相關連線資訊依各服務政策處理。";
+    }
+
+    async function sendOrderToSheet(payload) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      try {
+        // 使用 text/plain 可避免跨網域預檢請求（Apps Script 不支援）
+        const res = await fetch(ORDER_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "訂單送出失敗");
+        return data;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    async function submitOrder(event) {
       event.preventDefault();
       if (!cartCount()) return;
 
@@ -1019,11 +1055,44 @@
       }
 
       const modeNames = {pickup:"外帶自取", dinein:"門市內用", delivery:"冷凍宅配"};
-      const total = subtotal() + (mode === "delivery" ? 160 : 0);
-      const orderId = "GJ" + new Date().toISOString().slice(0,10).replace(/-/g,"") +
-        "-" + Math.random().toString(36).slice(2,8).toUpperCase();
+      let total = subtotal() + (mode === "delivery" ? 160 : 0);
+      let orderId;
 
-      $("#orderNumber").textContent = "模擬訂單編號：" + orderId;
+      if (ORDER_API_ENABLED) {
+        const btn = $("#submitOrderBtn");
+        const btnHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.textContent = "訂單送出中…";
+        try {
+          const result = await sendOrderToSheet({
+            fulfillment: mode,
+            storeId: mode === "delivery" ? "" : $("#pickupStore").value,
+            deliveryAddress: mode === "delivery" ? $("#deliveryAddress").value.trim() : "",
+            customer: {
+              name: $("#customerName").value.trim(),
+              phone: $("#customerPhone").value.trim(),
+              email: $("#customerEmail").value.trim(),
+              note: $("#customerNote").value.trim()
+            },
+            items: Object.entries(cart).map(([id, qty]) => ({ id: Number(id), qty })),
+            website: form.website.value
+          });
+          orderId = result.orderId;
+          total = result.total;
+        } catch (error) {
+          showToast(error.name === "AbortError" ? "連線逾時，請稍後再試" :
+            (error.message && !/fetch|JSON|network/i.test(error.message) ? error.message : "訂單送出失敗，請檢查網路後再試"));
+          return;
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = btnHtml;
+        }
+      } else {
+        orderId = "GJ" + new Date().toISOString().slice(0,10).replace(/-/g,"") +
+          "-" + Math.random().toString(36).slice(2,8).toUpperCase();
+      }
+
+      $("#orderNumber").textContent = (ORDER_API_ENABLED ? "訂單編號：" : "模擬訂單編號：") + orderId;
       $("#successSummary").textContent = `取餐方式：${modeNames[mode]}　|　總計：${money(total)}`;
 
       cart = {};
