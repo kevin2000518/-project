@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "金煎 GINJIAN",
+  "short_name": "金煎",
+  "description": "一口金黃，剛剛好的幸福。探索金煎鍋貼、門市與線上預約。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f5ef",
+  "theme_color": "#30251f",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

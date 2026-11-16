@@ -4,7 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f8f5ef">
+  <meta name="theme-color" content="#30251f">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="金煎">
+  <script src="./pwa.js" defer></script>
   <meta name="description" content="金煎 GINJIAN，以職人手藝打造金黃酥脆的現煎鍋貼。線上點餐、冷凍禮盒與門市資訊。">
   <title>金煎 GINJIAN｜一口金黃，剛剛好的幸福</title>
 
@@ -533,6 +539,16 @@
           <p>服務時間：週一至週五<br>10:00–18:00（示意）</p>
           <button id="privacyBtn" class="hover:text-white underline underline-offset-4">隱私權政策</button>
         </div>
+      </div>
+    </div>
+    <div class="container-custom pb-8">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px;border:1px solid #ffffff26;border-radius:16px">
+        <img src="./icons/icon-192.png" alt="金煎鍋貼 App 圖示" width="64" height="64" style="border-radius:16px">
+        <div style="flex:1;min-width:200px">
+          <p style="font-size:15px;font-weight:600;margin:0 0 6px">把金煎帶著走</p>
+          <p id="installHelp" style="font-size:12px;line-height:1.8;color:#ffffffb3;margin:0" role="status">iPhone：在 Safari 點「分享」→「加入主畫面」。Android／電腦：在瀏覽器選單選擇「安裝應用程式」。</p>
+        </div>
+        <button id="installApp" type="button" hidden style="background:#a9552b;color:white;border:0;border-radius:99px;padding:12px 20px;font-size:13px">安裝金煎 App</button>
       </div>
     </div>
     <div class="border-t border-white/10">
